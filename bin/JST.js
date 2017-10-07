@@ -1,10 +1,26 @@
-var JST = {
-	config: null,
-	cache: {},
-	setConfig: function(config){
-		JST.config = config;
-	}
-};
+if(!window.JST){
+	var JST = {
+		config: null,
+		loaderHTML: "...",
+		cache: {},
+		setLoaderHTML: function(html){
+			JST.loaderHTML = html;
+		},
+		setConfig: function(config){
+			JST.config = config;
+		},
+		beforeRender: function(template, data){
+			return [template, data];
+		},
+		afterRender: function(renderedData){
+			return renderedData;
+		},
+		beforeInsert: function(parent, data){
+			return [parent, data];
+		},
+		afterInsert: function(parent){}
+	};
+}
 (function(config, variablePattern){
 	if(JST.config) config = JST.config;
 	else if(config.getAttribute("src")){
@@ -31,11 +47,14 @@ var JST = {
 	    xmlhttp.send();
 	}
 	var _renderTemplate = function(template, data){
-		if(data){
-			template = template.replace(variablePattern, function(match, objectReference) {
+		var beforeRenderData = JST.beforeRender(template, data);
+		if(beforeRenderData[1]){
+			beforeRenderData[0] = beforeRenderData[0].replace(variablePattern, function(match, objectReference) {
 				try{
 					var renderer = new Function('return '+objectReference);
-					return renderer.bind(data)();
+					var rendered = renderer.bind(beforeRenderData[1])();
+					if(typeof rendered == "object") rendered = JSON.stringify(rendered);
+					return rendered;
 				}
 				catch(e){
 					console.log(e);
@@ -43,7 +62,7 @@ var JST = {
 				}
 			});
 		}
-		return template;
+		return JST.afterRender(beforeRenderData[0]);
 	}
 	var renderTemplate = function(parent, template, data){
 		if(parent.getAttribute('data-loop')){
@@ -63,12 +82,18 @@ var JST = {
 		else{
 			template = _renderTemplate(template, data);
 		}
-		parent.innerHTML = template;
+		var beforeInsertData = JST.beforeInsert(parent, template);
+		beforeInsertData[0].innerHTML = beforeInsertData[1];
+		if(beforeInsertData[1].indexOf('data-template=') >= 0){
+			JST.parsePage(parent);
+		}
+		JST.afterInsert(parent);
 	}
-	var parsePage = function(templates, providers){
+	var parsePage = function(templates, providers, page){
 		for(var template in templates){
-			var elements = document.querySelectorAll('[data-template="'+template+'"]');
+			var elements = page.querySelectorAll('[data-template="'+template+'"]');
 			elements.forEach(function(element){
+				element.innerHTML = JST.loaderHTML;
 				var dataProvider = providers[element.getAttribute('data-provider')];
 				fetchFile(templates[template], function(templateData){
 					switch(typeof dataProvider){
@@ -88,8 +113,12 @@ var JST = {
 			});
 		}
 	}
-	parsePage(config.templates?config.templates:{}, config.providers?config.providers:{});
+	JST.parsePage = function(page){
+		if(!page) page = document;
+		parsePage(config.templates?config.templates:{}, config.providers?config.providers:{}, page);
+	}
+	JST.parsePage();
 })(
 	document.querySelector('script[type="jst/config"]')?document.querySelector('script[type="jst/config"]'):{"templates":{},"providers":{}},
-  	/{{var ([a-zA-Z\.\[\]0-9]*)}}/g
+  	/{{var ([a-zA-Z\.\_\[\]0-9]*)}}/g
 );

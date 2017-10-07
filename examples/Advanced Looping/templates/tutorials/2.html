@@ -1,0 +1,15 @@
+<div>
+	Now let's say we wanted to loop through all the employees in the JSON. For that in our main file we write,
+	<br /><br />
+	<pre>&lt;div data-template="looper" data-provider="sampleData" data-loop"response.items.employees"&gt;&lt;/div&gt;</pre>
+	<br />
+	And then in our template, we will write
+	<br /><br />
+	<pre>&lt;p&gt;&#123;&#123;var this.name&#125;&#125;&lt;/p&gt;</pre>
+	<br />
+	The output would be
+	<br /><br />
+	<div style="border: 1px solid silver;padding: 3%;margin: 3%">
+	<div data-template="looper" data-provider="data" data-loop="response.items.employees"></div>
+	</div>
+</div>

@@ -6,21 +6,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script type="jst/config">
-		{
-			"templates": {
-				"heading"		: "templates/heading.html",
-				"info"			: "templates/info.html",
-				"provider_info"	: "templates/provider_info.html",
-				"config_info"	: "templates/config_info.html",
-				"footer"		: "templates/footer.html",
-				"bonus"			: "templates/bonus.html"
-			},
-			"providers": {
-				"info": "providers/info.json"
-			}
-		}
-	</script>
+	<script type="jst/config" src="config.json"></script>
 	<style type="text/css">
 		.container{
 			margin: 2px;
@@ -39,15 +25,14 @@
 		<header class="jumbotron">
 			<h1 data-template="heading"></h1>
 		</header>
-		<div class="info">
-			<div data-template="info"></div>
-			<div class="row">
-				<div class="col-md-6" data-template="provider_info" data-provider="info"></div>
-				<div class="col-md-6" data-template="config_info"></div>
-				<div class="col-md-12" data-template="bonus"></div>
+		<div class="row">
+			<div class="col-md-12" data-template="info" data-provider="data"></div>
+			<div class="col-md-12 row">
+				<div class="col-md-6" data-template="tutorial1" data-provider="data"></div>
+				<div class="col-md-6" data-template="tutorial2" data-provider="data"></div>
 			</div>
 		</div>
-		<footer data-template="footer" class="jumbotron footer"></footer>
+		<footer class="footer jumbotron" data-template="footer"></footer>
 	</div>
 	<script type="text/javascript" src="../../bin/JST.js"></script>
 </body>

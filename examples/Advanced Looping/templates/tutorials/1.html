@@ -1,0 +1,15 @@
+<div>
+	Let's start by printing the "Success" message from the JSON in a template. So for that first in our main file we write something like
+	<br /><br />
+	<pre>&lt;div data-template="message" data-provider="sampleData"&gt;&lt;/div&gt;</pre>
+	<br />
+	And then in our template, we will write
+	<br /><br />
+	<pre>&lt;p&gt;&#123;&#123;var this.response.messages.status[0]&#125;&#125;&lt;/p&gt;</pre>
+	<br />
+	The output would be
+	<br /><br />
+	<div style="border: 1px solid silver;padding: 3%;margin: 3%">
+		<p>{{var this.response.messages.status[0]}}</p>
+	</div>
+</div>

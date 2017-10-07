@@ -1,6 +1,6 @@
 <div>
-	To get started, the first thing you need to do is include the <code>JST.js</code> file present in the <code>bin</code> directory just before you close the <code>body</code> tag. Next you need to create a "config" for your JST engine to read. This config tells JST where all of the templates and providers are present, so that it can retrieve and download them. Below is the JST config block for this page.<br />
-	<pre style="margin: 2%">
+	To get started, the first thing you need to do is include the <code>JST.js</code> file present in the <code>bin</code> directory just before you close the <code>body</code> tag. Next you need to create a "config" for your JST engine to read. This config tells JST where all of the templates and providers are present, so that it can retrieve and display them. Below is the JST config block for this page.<br />
+	<pre>
 &lt;script type="jst/config"&gt;
 	{
 		"templates": {
@@ -19,5 +19,5 @@
 	As you can see, it's nothing but a <code>script</code> tag of type <code>jst/config</code>. The content the config should be a json having two parts, <code>templates</code> and <code>providers</code>. The config can either be written inside the script tag, as mentioned above, or it can be provided an external source file. For eg, <br /><br />
 	<pre>&lt;script type="jst/config" src="path/to/source.json"&gt;&lt;/script&gt;</pre>
 	<br /><br />
-	After providing the config, each DOM element can be given with it's template and provider by using the <code>template="template_name"</code> and <code>provider="provider_name"</code> attribute.
+	After providing the config, each DOM element can be given with it's template and provider by using the <code>data-template="template_name"</code> and <code>data-provider="provider_name"</code> attribute.
 </div>

@@ -1,1 +1,23 @@
 <div>{{var this.message}}</div>
+<hr />
+<div>
+If a template has a provider, the data of that provider can be accessed by referencing it with <code>this</code>. For eg,
+<br /><br />
+Lets say we have a template file <code>hello.html</code> which has a data provider <code>data.json</code>. The content of the data.json file is as follows,
+<br /><br />
+<pre>{{var this.sample_data_provider}}</pre>
+<br />
+So in the template file, we can access this data as follows,
+<br /><br />
+<pre>
+&lt;h1&gt;&#123;&#123;var this.heading&#125;&#125;&lt;/h1&gt;
+&lt;p&gt;&#123;&#123;var this.message&#125;&#125;&lt;/p&gt;
+</pre>
+<br />
+The output of the following code would be,
+<br />
+<div style="border: 1px solid silver;padding: 3%;margin: 3%">
+	<h1>{{var this.sample_data_provider.heading}}</h1>
+	<p>{{var this.sample_data_provider.message}}</p>
+</div>
+</div>

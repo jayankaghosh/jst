@@ -1,10 +1,12 @@
 {
 	"templates": {
-		"info" : "info.html",
-		"thead": "thead.html",
-		"tbody": "tbody.html"
+		"heading": "templates/heading.html",
+		"info" : "templates/info.html",
+		"thead": "templates/thead.html",
+		"tbody": "templates/tbody.html",
+		"footer": "templates/footer.html"
 	},
 	"providers": {
-		"employee": "employees.json"
+		"employee": "providers/employees.json"
 	}
 }

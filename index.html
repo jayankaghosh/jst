@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JST Templating Engine</title>
+	<style type="text/css">
+		#jst-demo-basic{
+			width: 100%;
+			padding: 0px;
+			margin: 0px;
+			border: none;
+		}
+	</style>
+</head>
+<body>
+	<!-- Head over to the examples folder for a quick demo on how to use the JST engine -->
+	<iframe id="jst-demo-basic" src="examples/Basic/index.html"></iframe>
+	<script type="text/javascript">
+		var iframe = document.getElementById("jst-demo-basic");
+		iframe.addEventListener("load", function(){
+			iframe.contentWindow.JST.afterInsert = function(){
+				iframe.style.height = iframe.contentWindow.document.body.offsetHeight+"px";
+			}
+		});
+	</script>
+</body>
+</html>

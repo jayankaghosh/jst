@@ -1,3 +1,7 @@
 {
-	"message": "Each template can be provided with it's own data provider by using the <code>data-provider</code> attribute. If you see my code, my data provider resides in the <code>providers/info.json</code> file. I am simply displaying whatever message that file gives me. How cool is that!"
+	"message": "Each template can be provided with it's own data provider by using the <code>data-provider</code> attribute. If you see my code, my data provider resides in the <code>providers/info.json</code> file. I am simply displaying whatever message that file gives me. How cool is that!",
+	"sample_data_provider": {
+		"heading": "Hello World",
+		"message": "JST is fun!"
+	}
 }

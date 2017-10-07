@@ -1,0 +1,13 @@
+{
+	"templates": {
+		"heading": "templates/heading.html",
+		"info" : "templates/info.html",
+		"tutorial1": "templates/tutorials/1.html",
+		"tutorial2": "templates/tutorials/2.html",
+		"looper": "templates/tutorials/looper.html",
+		"footer": "templates/footer.html"
+	},
+	"providers": {
+		"data": "providers/data.json"
+	}
+}
