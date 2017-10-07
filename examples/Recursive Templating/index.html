@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title data-template="heading"></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="jst/config" src="config.json"></script>
+	<style type="text/css">
+		.container{
+			margin: 2px;
+			width: auto;
+		}
+		.footer{
+			text-align: center;
+			margin-top: 3%;
+			margin-bottom: 0px;
+			padding: 2%;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header class="jumbotron">
+			<h1 data-template="heading"></h1>
+		</header>
+		<div class="row">
+			<div class="col-md-12" data-template="info" data-provider="data"></div>
+			<div class="col-md-12" data-template="looper"></div>
+			<div class="col-md-12" data-template="note"></div>
+		</div>
+		<footer class="footer jumbotron" data-template="footer"></footer>
+	</div>
+	<script type="text/javascript" src="../../bin/JST.js"></script>
+</body>
+</html>

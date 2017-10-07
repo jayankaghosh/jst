@@ -1,0 +1,12 @@
+{
+	"templates": {
+		"heading": "templates/heading.html",
+		"info" : "templates/info.html",
+		"looper": "templates/looper.html",
+		"looper1": "templates/looper/1.html",
+		"looper2": "templates/looper/2.html",
+		"looper3": "templates/looper/3.html",
+		"note": "templates/note.html",
+		"footer": "templates/footer.html"
+	}
+}
