@@ -1,0 +1,10 @@
+{
+	"templates": {
+		"info" : "info.html",
+		"thead": "thead.html",
+		"tbody": "tbody.html"
+	},
+	"providers": {
+		"employee": "employees.json"
+	}
+}

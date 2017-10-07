@@ -4,10 +4,20 @@ var JST = {
 	setConfig: function(config){
 		JST.config = config;
 	}
-}
+};
 (function(config, variablePattern){
 	if(JST.config) config = JST.config;
-	function fetchFile(url, callback){
+	else if(config.getAttribute("src")){
+		fetchFile(config.getAttribute("src"), function(response){
+			config = response;
+		}, false);
+	}
+	else{
+		config = config.innerHTML;
+	}
+	config = JSON.parse(config);
+	function fetchFile(url, callback, async){
+		if(typeof async == "undefined") async = true;
 		if(JST.cache[url]) return callback(JST.cache[url]);
 	    var xmlhttp;
 	    xmlhttp = new XMLHttpRequest();
@@ -17,7 +27,7 @@ var JST = {
 	            callback(xmlhttp.responseText);
 	        }
 	    }
-	    xmlhttp.open("GET", url, true);
+	    xmlhttp.open("GET", url, async);
 	    xmlhttp.send();
 	}
 	var _renderTemplate = function(template, data){
@@ -78,8 +88,8 @@ var JST = {
 			});
 		}
 	}
-	parsePage(config.templates, config.providers);
+	parsePage(config.templates?config.templates:{}, config.providers?config.providers:{});
 })(
-	document.querySelector('script[type="application/jst"]')?JSON.parse(document.querySelector('script[type="application/jst"]').innerHTML):{"templates":{},"providers":{}},
+	document.querySelector('script[type="jst/config"]')?document.querySelector('script[type="jst/config"]'):{"templates":{},"providers":{}},
   	/{{var ([a-zA-Z\.\[\]0-9]*)}}/g
 );
