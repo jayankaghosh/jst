@@ -6,4 +6,4 @@ It supports looping, recursive templating etc.
 
 And the best part? It's all loaded through AJAX, which significantly increases the page load speed.
 
-## For a demo and tutorial head over [here](http://www.jayanka.com/jst/examples/Basic/index.html)
+## For a demo and tutorial head over [here](http://www.jayanka.com/jst/)
