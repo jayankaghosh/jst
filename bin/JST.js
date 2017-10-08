@@ -83,12 +83,11 @@ if(!window.JST){
 		if(parent.getAttribute('data-loop')){
 			var response = "";
 			try{
-				(function(){
-					eval("this."+parent.getAttribute('data-loop')).forEach(function(row){
-						response += _renderTemplate(template, row);
-					});
-					template = response;
-				}).bind(data)();
+				var loopRenderer = new Function('return '+parent.getAttribute('data-loop'));
+				loopRenderer.bind(data)().forEach(function(row){
+					response += _renderTemplate(template, row);
+				});
+				template = response;
 			}
 			catch(e){
 				console.log(e);
