@@ -14,15 +14,6 @@
 	<!-- Head over to the examples folder for a quick demo on how to use the JST engine -->
 	<div data-template="index"></div>
 	<script type="text/javascript" src="bin/JST.js"></script>
-	<script type="text/javascript">
-		JST.baseURL = function(){
-			var origin = window.location.origin;
-			var path = window.location.pathname.split("/");
-			if(path[path.length-1].indexOf(".") >= 0) path.splice(path.length-1, 1);
-			path = origin+path.join('/');
-			if(path.charAt(path.length-1) == '/') path = path.slice(0, -1);
-			return path+"/examples/Basic";
-		}
-	</script>
+	<script type="text/javascript">(function(b){JST.baseURL = function(){return b+"/examples/Basic";}})(JST.baseURL());</script>
 </body>
 </html>

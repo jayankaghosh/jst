@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Debugging</title>
+	<script type="jst/config">
+		{
+			"templates": {
+				"rl" : "../Recursive%20Templating/index.html"
+			}
+		}
+	</script>
+</head>
+<body>
+	<h2 class="info well well-lg">Debugging can get really complicated as the number of templates start to increase, and we tend to forget which template loaded which part of the page. For that we have included a handy little debugging script in the <code>bin</code> directory called <code>JstDebugger.js</code>. Just add it to your page after the <code>JST.js</code> and the JST engine will highlight the paths of the templates from which they were loaded. Below is a demo on how it works using the Recursive Template as an example.</h2>
+	<hr />
+	<hr />
+	<div data-template="rl"></div>
+	<script type="text/javascript" src="../../bin/JST.js"></script>
+	<script type="text/javascript" src="../../bin/JstDebugger.js"></script>
+	<script type="text/javascript">
+		(function(b){JST.baseURL = function(){return b+"/../Recursive%20Templating";}})(JST.baseURL());
+	</script>
+</body>
+</html>
