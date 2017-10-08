@@ -16,25 +16,33 @@ if(!window.JST){
 		},
 		setConfig: function(config){
 			JST.config = config;
-		},
-		beforeRender: function(template, data){
-			return [template, data];
-		},
-		afterRender: function(renderedData){
-			return renderedData;
-		},
-		beforeInsert: function(parent, data){
-			return [parent, data];
-		},
-		afterInsert: function(parent){}
+		}
 	};
 }
 (function(variablePattern){
+	var Plugins = {
+		render: function(f, args, context){
+			if(!context) context = window;
+			//before
+			if(typeof JST["before"+f.name] == "function"){
+				args = Plugins.execute(JST["before"+f.name], args, f);
+			}
+			var r = Plugins.execute(f, args);
+			//after
+			if(typeof JST["after"+f.name] == "function"){
+				r = Plugins.execute(JST["after"+f.name], [r], f);
+			}
+			return r;
+		},
+		execute(f, args, context){
+			return f.apply(context, args);
+		}
+	}
 	function fetchConfig(parent){
 		var config = parent.querySelector('script[type="jst/config"]')?parent.querySelector('script[type="jst/config"]'):{"templates":{},"providers":{}}
 		try{
 			if(config.getAttribute("src")){
-				fetchFile(config.getAttribute("src"), function(response){
+				_fetchFile(config.getAttribute("src"), function(response){
 					config = response;
 				}, false);
 			}
@@ -43,7 +51,7 @@ if(!window.JST){
 			}
 			config = JSON.parse(config);
 		}catch(e){}
-		JST.config = mergeConfigs(JST.config, config);
+		JST.config = Plugins.render(mergeConfigs, [JST.config, config]);
 		return JST.config;
 	}
 	function mergeConfigs(obj1, obj2){
@@ -60,14 +68,14 @@ if(!window.JST){
 		}
 		return obj1;
 	}
-	function fetchFile(url, callback, async){
+	function _fetchFile(url, callback, async){
 		url = url.replace(/\$BASEURL/g, JST.baseURL);
 		if(typeof async == "undefined") async = true;
 		if(JST.cache[url]){
 			switch (typeof JST.cache[url]) {
 				case "object":
 					return JST.cache[url].addEventListener('readystatechange', function(){
-						initCallback(this);
+						initCallback(this, url);
 					});
 				case "string":
 					return callback(JST.cache[url]);
@@ -76,27 +84,26 @@ if(!window.JST){
 		var xmlhttp;
 	    xmlhttp = new XMLHttpRequest();
 	    xmlhttp.addEventListener('readystatechange', function(){
-	    	initCallback(this);
+	    	initCallback(this, url);
 	    });
 	    xmlhttp.open("GET", url, async);
 	    xmlhttp.send();
 
 	    JST.cache[url] = xmlhttp;
 
-	    function initCallback(xmlhttp){
+	    function initCallback(xmlhttp, url){
 	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
 	        	JST.cache[url] = xmlhttp.responseText;
-	            callback(xmlhttp.responseText);
+	            callback(xmlhttp.responseText, url);
 	        }
 	    }
 	}
-	var _renderTemplate = function(template, data){
-		var beforeRenderData = JST.beforeRender(template, data);
-		if(beforeRenderData[1]){
-			beforeRenderData[0] = beforeRenderData[0].replace(variablePattern, function(match, objectReference) {
+	var renderTemplate = function(template, data){
+		if(data){
+			template = template.replace(variablePattern, function(match, objectReference) {
 				try{
 					var renderer = new Function('return '+objectReference);
-					var rendered = renderer.bind(beforeRenderData[1])();
+					var rendered = renderer.bind(data)();
 					if(typeof rendered == "object") rendered = JSON.stringify(rendered);
 					return rendered;
 				}
@@ -106,15 +113,15 @@ if(!window.JST){
 				}
 			});
 		}
-		return JST.afterRender(beforeRenderData[0]);
+		return template;
 	}
-	var renderTemplate = function(parent, template, data){
+	var parseTemplate = function(parent, template, data, debugInfo){
 		if(parent.getAttribute('data-loop')){
 			var response = "";
 			try{
 				var loopRenderer = new Function('return '+parent.getAttribute('data-loop'));
 				loopRenderer.bind(data)().forEach(function(row){
-					response += _renderTemplate(template, row);
+					response += Plugins.render(renderTemplate, [template, row]);
 				});
 				template = response;
 			}
@@ -123,14 +130,12 @@ if(!window.JST){
 			}
 		}
 		else{
-			template = _renderTemplate(template, data);
+			template = Plugins.render(renderTemplate, [template, data]);
 		}
-		var beforeInsertData = JST.beforeInsert(parent, template);
-		beforeInsertData[0].innerHTML = beforeInsertData[1];
-		if(beforeInsertData[1].indexOf('data-template=') >= 0){
+		parent.innerHTML = template;
+		if(template.indexOf('data-template=') >= 0){
 			JST.parsePage(parent);
 		}
-		JST.afterInsert(parent);
 	}
 	var parsePage = function(templates, providers, page){
 		for(var template in templates){
@@ -138,18 +143,18 @@ if(!window.JST){
 			elements.forEach(function(element){
 				element.innerHTML = JST.loaderHTML;
 				var dataProvider = providers[element.getAttribute('data-provider')];
-				fetchFile(templates[template], function(templateData){
+				_fetchFile(templates[template], function(templateData, url){
 					switch(typeof dataProvider){
 						case "undefined":
-							renderTemplate(element, templateData, null);
+							Plugins.render(parseTemplate, [element, templateData, null, [url, null]]);
 							break;
 						case "string":
-							fetchFile(dataProvider, function(dataProviderData){
-								renderTemplate(element, templateData, JSON.parse(dataProviderData));
+							_fetchFile(dataProvider, function(dataProviderData){
+								Plugins.render(parseTemplate, [element, templateData, JSON.parse(dataProviderData), [url, dataProviderData]]);
 							});
 							break;
 						case "object":
-							renderTemplate(element, templateData, dataProvider);
+							Plugins.render(parseTemplate, [element, templateData, dataProvider, [url, dataProvider]]);
 							break;
 					}
 				});
@@ -158,8 +163,8 @@ if(!window.JST){
 	}
 	JST.parsePage = function(page){
 		if(!page) page = document;
-		var config = fetchConfig(page);
-		parsePage(config.templates?config.templates:{}, config.providers?config.providers:{}, page);
+		var config = Plugins.render(fetchConfig, [page]);
+		Plugins.render(parsePage, [config.templates?config.templates:{}, config.providers?config.providers:{}, page]);
 	}
 	JST.parsePage();
 })(/{{var ([a-zA-Z\.\_\[\]0-9]*)}}/g);
