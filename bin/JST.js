@@ -34,17 +34,32 @@ if(!window.JST){
 	config = JSON.parse(config);
 	function fetchFile(url, callback, async){
 		if(typeof async == "undefined") async = true;
-		if(JST.cache[url]) return callback(JST.cache[url]);
-	    var xmlhttp;
+		if(JST.cache[url]){
+			switch (typeof JST.cache[url]) {
+				case "object":
+					return JST.cache[url].addEventListener('readystatechange', function(){
+						initCallback(this);
+					});
+				case "string":
+					return callback(JST.cache[url]);
+			}
+		}
+		var xmlhttp;
 	    xmlhttp = new XMLHttpRequest();
-	    xmlhttp.onreadystatechange = function(){
+	    xmlhttp.addEventListener('readystatechange', function(){
+	    	initCallback(this);
+	    });
+	    xmlhttp.open("GET", url, async);
+	    xmlhttp.send();
+
+	    JST.cache[url] = xmlhttp;
+
+	    function initCallback(xmlhttp){
 	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-	            JST.cache[url] = xmlhttp.responseText;
+	        	JST.cache[url] = xmlhttp.responseText;
 	            callback(xmlhttp.responseText);
 	        }
 	    }
-	    xmlhttp.open("GET", url, async);
-	    xmlhttp.send();
 	}
 	var _renderTemplate = function(template, data){
 		var beforeRenderData = JST.beforeRender(template, data);
