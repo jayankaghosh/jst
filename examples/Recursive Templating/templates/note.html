@@ -1,1 +1,1 @@
-<div class="well well-md"><label>NOTE:</label> Even though templates and data providers can be called recursively, but the jst config has to be set on the main file and cannot be overridden.<div>
+<div class="well well-md"><label>NOTE:</label> Each template can have it's own <code>jst/config</code> block which will contain the templates and providers it uses. To avoid confusion and messy code, we urge you to keep all paths relative to the base url, i.e, the main file's path, and use the <code>$BASEURL</code> directive.<div>
