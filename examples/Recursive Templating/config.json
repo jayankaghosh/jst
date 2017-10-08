@@ -1,12 +1,12 @@
 {
 	"templates": {
-		"heading": "templates/heading.html",
-		"info" : "templates/info.html",
-		"looper": "templates/looper.html",
-		"looper1": "templates/looper/1.html",
-		"looper2": "templates/looper/2.html",
-		"looper3": "templates/looper/3.html",
-		"note": "templates/note.html",
-		"footer": "templates/footer.html"
+		"heading": "$BASEURL/templates/heading.html",
+		"info" : "$BASEURL/templates/info.html",
+		"looper": "$BASEURL/templates/looper.html",
+		"looper1": "$BASEURL/templates/looper/1.html",
+		"looper2": "$BASEURL/templates/looper/2.html",
+		"looper3": "$BASEURL/templates/looper/3.html",
+		"note": "$BASEURL/templates/note.html",
+		"footer": "$BASEURL/templates/footer.html"
 	}
 }

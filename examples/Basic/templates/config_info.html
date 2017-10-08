@@ -4,19 +4,19 @@
 &lt;script type="jst/config"&gt;
 	{
 		"templates": {
-			"heading": "heading.html",
-			"info": "templates/info.html",
-			"provider_info": "templates/provider_info.html",
-			"config_info": "templates/config_info.html"	
+			"heading": "$BASEURL/heading.html",
+			"info": "$BASEURL/templates/info.html",
+			"provider_info": "$BASEURL/templates/provider_info.html",
+			"config_info": "$BASEURL/templates/config_info.html"	
 		},
 		"providers": {
-			"info": "providers/info.json"
+			"info": "$BASEURL/providers/info.json"
 		}
 	}
 &lt;/script&gt;
 	</pre>
 	<br />
-	As you can see, it's nothing but a <code>script</code> tag of type <code>jst/config</code>. The content the config should be a json having two parts, <code>templates</code> and <code>providers</code>. The config can either be written inside the script tag, as mentioned above, or it can be provided an external source file. For eg, <br /><br />
+	As you can see, it's nothing but a <code>script</code> tag of type <code>jst/config</code>. The content the config should be a json having two parts, <code>templates</code> and <code>providers</code>. JST internally converts the <code>$BASEURL</code> variable to the current base url. The config can either be written inside the script tag, as mentioned above, or it can be provided an external source file. For eg, <br /><br />
 	<pre>&lt;script type="jst/config" src="path/to/source.json"&gt;&lt;/script&gt;</pre>
 	<br /><br />
 	After providing the config, each DOM element can be given with it's template and provider by using the <code>data-template="template_name"</code> and <code>data-provider="provider_name"</code> attribute.

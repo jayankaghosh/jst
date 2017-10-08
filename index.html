@@ -5,16 +5,7 @@
 	<script type="jst/config">
 		{
 			"templates": {
-				"index"			: "examples/Basic/index.html",
-				"heading"		: "examples/Basic/templates/heading.html",
-				"info"			: "examples/Basic/templates/info.html",
-				"provider_info"	: "examples/Basic/templates/provider_info.html",
-				"config_info"	: "examples/Basic/templates/config_info.html",
-				"footer"		: "examples/Basic/templates/footer.html",
-				"bonus"			: "examples/Basic/templates/bonus.html"
-			},
-			"providers": {
-				"info": "examples/Basic/providers/info.json"
+				"index"	: "examples/Basic/index.html"
 			}
 		}
 	</script>
@@ -23,5 +14,15 @@
 	<!-- Head over to the examples folder for a quick demo on how to use the JST engine -->
 	<div data-template="index"></div>
 	<script type="text/javascript" src="bin/JST.js"></script>
+	<script type="text/javascript">
+		JST.baseURL = function(){
+			var origin = window.location.origin;
+			var path = window.location.pathname.split("/");
+			if(path[path.length-1].indexOf(".") >= 0) path.splice(path.length-1, 1);
+			path = origin+path.join('/');
+			if(path.charAt(path.length-1) == '/') path = path.slice(0, -1);
+			return path+"/examples/Basic";
+		}
+	</script>
 </body>
 </html>

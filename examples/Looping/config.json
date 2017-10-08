@@ -1,12 +1,12 @@
 {
 	"templates": {
-		"heading": "templates/heading.html",
-		"info" : "templates/info.html",
-		"thead": "templates/thead.html",
-		"tbody": "templates/tbody.html",
-		"footer": "templates/footer.html"
+		"heading": "$BASEURL/templates/heading.html",
+		"info" : "$BASEURL/templates/info.html",
+		"thead": "$BASEURL/templates/thead.html",
+		"tbody": "$BASEURL/templates/tbody.html",
+		"footer": "$BASEURL/templates/footer.html"
 	},
 	"providers": {
-		"employee": "providers/employees.json"
+		"employee": "$BASEURL/providers/employees.json"
 	}
 }

@@ -1,6 +1,14 @@
 if(!window.JST){
 	var JST = {
-		config: null,
+		baseURL: function(){
+			var origin = window.location.origin;
+			var path = window.location.pathname.split("/");
+			if(path[path.length-1].indexOf(".") >= 0) path.splice(path.length-1, 1);
+			path = origin+path.join('/');
+			if(path.charAt(path.length-1) == '/') path = path.slice(0, -1);
+			return path;
+		},
+		config: {"templates":{},"providers":{}},
 		loaderHTML: "...",
 		cache: {},
 		setLoaderHTML: function(html){
@@ -21,19 +29,39 @@ if(!window.JST){
 		afterInsert: function(parent){}
 	};
 }
-(function(config, variablePattern){
-	if(JST.config) config = JST.config;
-	else if(config.getAttribute("src")){
-		fetchFile(config.getAttribute("src"), function(response){
-			config = response;
-		}, false);
+(function(variablePattern){
+	function fetchConfig(parent){
+		var config = parent.querySelector('script[type="jst/config"]')?parent.querySelector('script[type="jst/config"]'):{"templates":{},"providers":{}}
+		try{
+			if(config.getAttribute("src")){
+				fetchFile(config.getAttribute("src"), function(response){
+					config = response;
+				}, false);
+			}
+			else{
+				config = config.innerHTML;
+			}
+			config = JSON.parse(config);
+		}catch(e){}
+		JST.config = mergeConfigs(JST.config, config);
+		return JST.config;
 	}
-	else{
-		config = config.innerHTML;
+	function mergeConfigs(obj1, obj2){
+		if(!obj1['templates']) obj1['templates'] = {};
+		if(!obj1['providers']) obj1['providers'] = {};
+
+		//merge templates
+		for(var key in obj2['templates']){
+			obj1['templates'][key] = obj2['templates'][key];
+		}
+		//merge providers
+		for(var key in obj2['providers']){
+			obj1['providers'][key] = obj2['providers'][key];
+		}
+		return obj1;
 	}
-	config = JSON.parse(config);
-	JST.config = config;
 	function fetchFile(url, callback, async){
+		url = url.replace(/\$BASEURL/g, JST.baseURL);
 		if(typeof async == "undefined") async = true;
 		if(JST.cache[url]){
 			switch (typeof JST.cache[url]) {
@@ -130,10 +158,8 @@ if(!window.JST){
 	}
 	JST.parsePage = function(page){
 		if(!page) page = document;
+		var config = fetchConfig(page);
 		parsePage(config.templates?config.templates:{}, config.providers?config.providers:{}, page);
 	}
 	JST.parsePage();
-})(
-	document.querySelector('script[type="jst/config"]')?document.querySelector('script[type="jst/config"]'):{"templates":{},"providers":{}},
-  	/{{var ([a-zA-Z\.\_\[\]0-9]*)}}/g
-);
+})(/{{var ([a-zA-Z\.\_\[\]0-9]*)}}/g);
