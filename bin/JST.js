@@ -32,6 +32,7 @@ if(!window.JST){
 		config = config.innerHTML;
 	}
 	config = JSON.parse(config);
+	JST.config = config;
 	function fetchFile(url, callback, async){
 		if(typeof async == "undefined") async = true;
 		if(JST.cache[url]){

@@ -2,25 +2,26 @@
 <html>
 <head>
 	<title>JST Templating Engine</title>
-	<style type="text/css">
-		#jst-demo-basic{
-			width: 100%;
-			padding: 0px;
-			margin: 0px;
-			border: none;
+	<script type="jst/config">
+		{
+			"templates": {
+				"index"			: "examples/Basic/index.html",
+				"heading"		: "examples/Basic/templates/heading.html",
+				"info"			: "examples/Basic/templates/info.html",
+				"provider_info"	: "examples/Basic/templates/provider_info.html",
+				"config_info"	: "examples/Basic/templates/config_info.html",
+				"footer"		: "examples/Basic/templates/footer.html",
+				"bonus"			: "examples/Basic/templates/bonus.html"
+			},
+			"providers": {
+				"info": "examples/Basic/providers/info.json"
+			}
 		}
-	</style>
+	</script>
 </head>
 <body>
 	<!-- Head over to the examples folder for a quick demo on how to use the JST engine -->
-	<iframe id="jst-demo-basic" src="examples/Basic/index.html"></iframe>
-	<script type="text/javascript">
-		var iframe = document.getElementById("jst-demo-basic");
-		iframe.addEventListener("load", function(){
-			iframe.contentWindow.JST.afterInsert = function(){
-				iframe.style.height = iframe.contentWindow.document.body.offsetHeight+"px";
-			}
-		});
-	</script>
+	<div data-template="index"></div>
+	<script type="text/javascript" src="bin/JST.js"></script>
 </body>
 </html>
