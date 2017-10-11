@@ -1,0 +1,7 @@
+<div class="well well-md">
+	Data mutators provide a way to bind the data provider to the template. In other words, whenever a data provider changes, all templates using the provider will also be re-initialized using the new provider as input. To change a data provider or set it, you may call the <code>JST.setProvider(name, data)</code> method.
+</div>
+<hr />
+<div class="well well-md">
+	Below is an example of 2 <code>&lt;div&gt;</code>s sharing the same template <code>clock.html</code> but different data providers. The data providers are updated periodically and hence we can see the DOM also getting refreshed periodically
+</div>

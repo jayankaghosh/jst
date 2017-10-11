@@ -11,26 +11,32 @@ if(!window.JST){
 		config: {"templates":{},"providers":{}},
 		loaderHTML: "...",
 		cache: {},
+		providers: {},
 		setLoaderHTML: function(html){
 			JST.loaderHTML = html;
 		},
 		setConfig: function(config){
 			JST.config = config;
+		},
+		setTemplate: function(name, url){
+			JST.config.templates[name] = url;
 		}
 	};
 }
 (function(variablePattern){
 	var Plugins = {
+		subject: window.JST,
 		render: function(f, args, context){
 			if(!context) context = window;
+			if(typeof Plugins.subject.plugins != "object") Plugins.subject.plugins = {};
 			//before
-			if(typeof JST["before"+f.name] == "function"){
-				args = Plugins.execute(JST["before"+f.name], args, f);
+			if(typeof Plugins.subject.plugins["before"+f.name] == "function"){
+				args = Plugins.execute(Plugins.subject.plugins["before"+f.name], args, f);
 			}
 			var r = Plugins.execute(f, args);
 			//after
-			if(typeof JST["after"+f.name] == "function"){
-				r = Plugins.execute(JST["after"+f.name], [r], f);
+			if(typeof Plugins.subject.plugins["after"+f.name] == "function"){
+				r = Plugins.execute(Plugins.subject.plugins["after"+f.name], [r], f);
 			}
 			return r;
 		},
@@ -44,13 +50,13 @@ if(!window.JST){
 			if(config.getAttribute("src")){
 				_fetchFile(config.getAttribute("src"), function(response){
 					config = response;
-				}, false);
+				}, false, null);
 			}
 			else{
 				config = config.innerHTML;
 			}
 			config = JSON.parse(config);
-		}catch(e){}
+		}catch(e){console.log("JST: config not found");}
 		JST.config = Plugins.render(mergeConfigs, [JST.config, config]);
 		return JST.config;
 	}
@@ -68,14 +74,14 @@ if(!window.JST){
 		}
 		return obj1;
 	}
-	function _fetchFile(url, callback, async){
+	function _fetchFile(url, callback, extraData, async){
 		url = url.replace(/\$BASEURL/g, JST.baseURL);
 		if(typeof async == "undefined") async = true;
 		if(JST.cache[url]){
 			switch (typeof JST.cache[url]) {
 				case "object":
 					return JST.cache[url].addEventListener('readystatechange', function(){
-						initCallback(this, url);
+						initCallback(this, url, extraData);
 					});
 				case "string":
 					return callback(JST.cache[url]);
@@ -94,26 +100,24 @@ if(!window.JST){
 	    function initCallback(xmlhttp, url){
 	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
 	        	JST.cache[url] = xmlhttp.responseText;
-	            callback(xmlhttp.responseText, url);
+	            callback(xmlhttp.responseText, url, extraData);
 	        }
 	    }
 	}
 	var renderTemplate = function(template, data){
-		if(data){
-			template = template.replace(variablePattern, function(match, objectReference) {
-				try{
-					var renderer = new Function('return '+objectReference);
-					var rendered = renderer.bind(data)();
-					if(typeof rendered == "object") rendered = JSON.stringify(rendered);
-					return rendered;
-				}
-				catch(e){
-					console.log(e);
-					return match;
-				}
-			});
-		}
-		return template;
+		if(!data) data = {};
+		template = template.replace(variablePattern, function(match, objectReference) {
+			try{
+				var renderer = new Function('return '+objectReference);
+				var rendered = renderer.bind(data)();
+				if(typeof rendered == "object") rendered = JSON.stringify(rendered);
+				return rendered;
+			}
+			catch(e){
+				console.log(e);
+			}
+		});
+		return template.replace(/\$BASEURL/g, JST.baseURL);;
 	}
 	var parseTemplate = function(parent, template, data, debugInfo){
 		if(parent.getAttribute('data-loop')){
@@ -133,38 +137,118 @@ if(!window.JST){
 			template = Plugins.render(renderTemplate, [template, data]);
 		}
 		parent.innerHTML = template;
-		if(template.indexOf('data-template=') >= 0){
-			JST.parsePage(parent);
+		for(var i = 0; i < parent.childNodes.length; i++){
+			if(isJavascript(parent.childNodes[i])){
+				var executor = new Function(parent.childNodes[i].innerHTML);
+				executor.bind(data)();
+				parent.removeChild(parent.childNodes[i]);
+			}
 		}
+
+		if(hasAttribute(parent, 'data-template')){
+			JST.actions.parsePage(parent);
+		}
+
+		function hasAttribute(parent, attribute){
+			var allElements = parent.getElementsByTagName("*");
+			for (var i = 0; i < allElements.length; i++){
+				if (allElements[i].getAttribute(attribute) !== null){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		function isJavascript(element){
+			return element.tagName == "SCRIPT" && element.getAttribute('type') && element.getAttribute('type').toLowerCase() == "text/javascript";
+		}
+
 	}
 	var parsePage = function(templates, providers, page){
 		for(var template in templates){
 			var elements = page.querySelectorAll('[data-template="'+template+'"]');
 			elements.forEach(function(element){
 				element.innerHTML = JST.loaderHTML;
-				var dataProvider = providers[element.getAttribute('data-provider')];
-				_fetchFile(templates[template], function(templateData, url){
-					switch(typeof dataProvider){
+				var dataProvider = {
+					name: element.getAttribute('data-provider'),
+					value: providers[element.getAttribute('data-provider')]
+				}
+				if(typeof templates[template] == "function"){
+					afterTemplateFetch(templates[template](dataProvider.name, dataProvider.value), "Loaded Locally", dataProvider);
+				}
+				else{
+					_fetchFile(templates[template], afterTemplateFetch, dataProvider);
+				}
+
+				function afterTemplateFetch(templateData, url, dataProvider){
+					if(typeof JST.providers[dataProvider.name] != "object"){
+						JST.providers[dataProvider.name] = [];
+					}
+					switch(typeof dataProvider.value){
 						case "undefined":
+							JST.providers[dataProvider.name].push({
+								"element": element,
+								"template": templateData,
+								"debugInfo": debugInfo
+							});
 							Plugins.render(parseTemplate, [element, templateData, null, [url, null]]);
 							break;
 						case "string":
-							_fetchFile(dataProvider, function(dataProviderData){
-								Plugins.render(parseTemplate, [element, templateData, JSON.parse(dataProviderData), [url, dataProviderData]]);
+							_fetchFile(dataProvider.value, function(dataProviderData){
+								dataProviderData = JSON.parse(dataProviderData);
+								var debugInfo = [url, dataProviderData];
+								JST.providers[element.getAttribute('data-provider')].push({
+									"element": element,
+									"template": templateData,
+									"debugInfo": debugInfo
+								});
+								Plugins.render(parseTemplate, [element, templateData, dataProviderData, debugInfo]);
 							});
 							break;
 						case "object":
-							Plugins.render(parseTemplate, [element, templateData, dataProvider, [url, dataProvider]]);
+							var debugInfo = [url, dataProvider.value];
+							JST.providers[dataProvider.name].push({
+								"element": element,
+								"template": templateData,
+								"debugInfo": debugInfo
+							});
+							Plugins.render(parseTemplate, [element, templateData, dataProvider.value, debugInfo]);
 							break;
 					}
-				});
+				}
 			});
 		}
 	}
-	JST.parsePage = function(page){
-		if(!page) page = document;
-		var config = Plugins.render(fetchConfig, [page]);
-		Plugins.render(parsePage, [config.templates?config.templates:{}, config.providers?config.providers:{}, page]);
+
+	JST.setProvider = function(name, data){
+		var provider = JST.providers[name];
+		JST.config.providers[name] = data;
+		if(provider){
+			provider.forEach(function(hook){
+				Plugins.render(parseTemplate, [hook.element, hook.template, data, hook.debugInfo]);
+			});
+		}
 	}
-	JST.parsePage();
-})(/{{var ([a-zA-Z\.\_\[\]0-9]*)}}/g);
+
+	JST.getProvider = function(name){
+		return JST.providers[name];
+	}
+
+	JST.actions = {
+		"parsePage": function(page){
+			if(!page) page = document;
+			var config = Plugins.render(fetchConfig, [page]);
+			Plugins.render(parsePage, [config.templates?config.templates:{}, config.providers?config.providers:{}, page]);
+		},
+		"parseTemplate": function(parent, template, data, debugInfo){
+			if(!debugInfo){
+				debugInfo = ["Locally loaded", JSON.stringify(data)];
+			}
+			return Plugins.render(parseTemplate, [parent, template, data, debugInfo]);
+		},
+		"renderTemplate": function(template, data){
+			return Plugins.render(renderTemplate, [template, data]);
+		}
+	}
+	JST.actions.parsePage();
+})(/{{var ([a-zA-Z\.\-\$\_\[\]0-9]*)}}/g);
