@@ -138,7 +138,7 @@ if(!window.JST){
 			   template = '';
 			}
 		}
-		var f = new Function('var tmp="";'+processedTemplate+'return tmp;');
+		var f = new Function('var _jst_tmp_var="";'+processedTemplate+'return _jst_tmp_var;');
 		return f.bind(data)();
 
 		function addToProcessedTemplate(str){
@@ -146,7 +146,7 @@ if(!window.JST){
 			str = str.replace(variablePattern, function(match, objectReference){
 				return '"+'+objectReference+'+"';
 			});
-			processedTemplate += 'tmp += "'+str+'";';
+			processedTemplate += '_jst_tmp_var += "'+str+'";';
 		}
 
 	}
