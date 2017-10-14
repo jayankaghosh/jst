@@ -1,0 +1,11 @@
+{
+	"templates": {
+		"heading": "$BASEURL/templates/heading.html",
+		"info" : "$BASEURL/templates/info.html",
+		"table": "$BASEURL/templates/table.html",
+		"footer": "$BASEURL/templates/footer.html"
+	},
+	"providers": {
+		"items": "$BASEURL/providers/items.json"
+	}
+}

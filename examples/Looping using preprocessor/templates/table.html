@@ -1,0 +1,17 @@
+
+<div class="well well-md">
+	<h3>And the output would be</h3>
+</div>
+
+<table class="table">
+	<tr>
+		<th>ID</th>
+		<th>Name</th>
+	</tr>
+	<? this.items.forEach(function(item){ ?>
+		<tr>
+			<td>{{var item.id}}</td>
+			<td>{{var item.name}}</td>
+		</tr>
+	<? }); ?>
+</table>

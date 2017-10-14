@@ -5,7 +5,8 @@ If a template has a provider, the data of that provider can be accessed by refer
 <br /><br />
 Lets say we have a template file <code>hello.html</code> which has a data provider <code>data.json</code>. The content of the data.json file is as follows,
 <br /><br />
-<pre>{{var this.sample_data_provider}}</pre>
+<? var strigifiedData = JSON.stringify(this.sample_data_provider); ?>
+<pre>{{var strigifiedData}}</pre>
 <br />
 So in the template file, we can access this data as follows,
 <br /><br />

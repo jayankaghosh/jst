@@ -1,0 +1,26 @@
+<h3>The JST engine comes with a built-in preprocessor capable of executing inline JS in your templates. So for example, lets say we have an array we want to loop through and display. We can either use the <code>data-loop</code> attribute, or we can use the JST preprocessor to loop inside the template itself.</h3>
+
+<h4>For example, lets say we have a JSON which looks something like this,</h4>
+<br />
+<div>
+	<pre>{{var JSON.stringify(this)}}</pre>
+</div>
+
+<h4>Using the preprocessor, inside the template we can write something like,</h4>
+<br />
+<div>
+	<pre>
+&lt;table class="table"&gt;
+	&lt;tr&gt;
+		&lt;th&gt;ID&lt;/th&gt;
+		&lt;th&gt;Name&lt;/th&gt;
+	&lt;/tr&gt;
+	&lt;? this.items.forEach(function(item){ ?&gt; <span style="color: grey">&lt;!-- LOOP START --&gt;</span>
+		&lt;tr&gt;
+			&lt;td&gt;&#123;&#123;var item.id&#125;&#125;&lt;/td&gt;
+			&lt;td&gt;&#123;&#123;var item.name&#125;&#125;&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;? }); ?&gt; <span style="color: grey">&lt;!-- LOOP END --&gt;</span>
+&lt;/table&gt;
+</pre>
+</div>

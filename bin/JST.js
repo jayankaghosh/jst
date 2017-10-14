@@ -8,6 +8,22 @@ if(!window.JST){
 			if(path.charAt(path.length-1) == '/') path = path.slice(0, -1);
 			return path;
 		},
+		variablePattern: /{{var (.*?)}}/,
+		preprocessorPattern: /\<\?(.*?)\?\>/,
+		getVariablePattern: function(){
+			var pattern = JST.variablePattern;
+			var source = pattern.source;
+			return new RegExp(source, "g");
+		},
+		getpreprocessorPattern: function(){
+			return JST.preprocessorPattern; 
+		},
+		setVariablePattern: function(regex){
+			JST.variablePattern = regex;
+		},
+		setpreprocessorPattern: function(regex){
+			JST.preprocessorPattern = regex;
+		},
 		config: {"templates":{},"providers":{}},
 		loaderHTML: "...",
 		cache: {},
@@ -23,7 +39,8 @@ if(!window.JST){
 		}
 	};
 }
-(function(variablePattern){
+(function(variablePattern, preprocessorPattern){
+	var preprocessorPlaceholderString = Math.floor(Math.random() * (5000 - 1 + 1)) + 1;
 	var Plugins = {
 		subject: window.JST,
 		render: function(f, args, context){
@@ -104,20 +121,39 @@ if(!window.JST){
 	        }
 	    }
 	}
+	var templatePreProcessor = function(template, data){
+		template = template.replace(/(?:\r\n|\r|\n)/g, preprocessorPlaceholderString);
+		var processedTemplate = "";
+		while(template.length > 0){
+		   	var pos = template.search(preprocessorPattern);
+		   	if(pos >= 0){
+		       	addToProcessedTemplate(template.substr(0, pos));
+		       	template = template.substr(pos);
+		       	matched = preprocessorPattern.exec(template);
+		       	processedTemplate += matched[1];
+		       	template = template.substr(matched[0].length)
+		   	}
+		   	else{
+			   addToProcessedTemplate(template);
+			   template = '';
+			}
+		}
+		var f = new Function('var tmp="";'+processedTemplate+'return tmp;');
+		return f.bind(data)();
+
+		function addToProcessedTemplate(str){
+			str = str.replace(/"/g, '\\"');
+			str = str.replace(variablePattern, function(match, objectReference){
+				return '"+'+objectReference+'+"';
+			});
+			processedTemplate += 'tmp += "'+str+'";';
+		}
+
+	}
 	var renderTemplate = function(template, data){
 		if(!data) data = {};
-		template = template.replace(variablePattern, function(match, objectReference) {
-			try{
-				var renderer = new Function('return '+objectReference);
-				var rendered = renderer.bind(data)();
-				if(typeof rendered == "object") rendered = JSON.stringify(rendered);
-				return rendered;
-			}
-			catch(e){
-				console.log(e);
-			}
-		});
-		return template.replace(/\$BASEURL/g, JST.baseURL);;
+		template = templatePreProcessor(template, data);
+		return template.replace(/\$BASEURL/g, JST.baseURL).replace(new RegExp(preprocessorPlaceholderString, "g"), '\n');
 	}
 	var parseTemplate = function(parent, template, data, debugInfo){
 		if(parent.getAttribute('data-loop')){
@@ -251,4 +287,7 @@ if(!window.JST){
 		}
 	}
 	JST.actions.parsePage();
-})(/{{var ([a-zA-Z\.\-\$\_\[\]0-9]*)}}/g);
+})(
+	JST.getVariablePattern(),
+	JST.getpreprocessorPattern()
+);
