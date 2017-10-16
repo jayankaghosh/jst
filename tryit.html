@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Try It</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="jumbotron"><h1>Try It Yourself</h1></div>
+		<div class="row">
+			<div class="col-md-12 well well-md">
+				<pre>&lt;div data-template="tryit" data-provider="tryit"&gt;&lt;/div&gt;</pre>
+			</div>
+			<form class="col-md-6 row tryit-form">
+				<div class="col-md-6 form-horizontal">
+					<label>Template</label>
+					<textarea class="form-control" rows=10 id="tryit_template">
+&lt;h1&gt;
+    {{var this.messages.welcome}}
+&lt;/h1&gt;
+					</textarea>
+				</div>
+				<div class="col-md-6 form-horizontal">
+					<label>Data Provider</label>
+					<textarea class="form-control" rows=10 id="tryit_data_provider">
+{
+   "messages": {
+       "welcome": "Hello World"
+   }
+}
+					</textarea>
+				</div>
+				<div class="col-md-12">
+					<button class="btn btn-success">Try It</button>
+				</div>
+			</form>
+			<div class="col-md-6" id="output_container">
+				<label>Output</label>
+				<div class="output well well-md" data-template="tryit" data-provider="tryit"></div>
+			</div>
+		</div>
+		<script type="text/javascript" src="bin/JST.js"></script>
+		<script type="text/javascript">	
+			(function(){
+				$('.tryit-form').on('submit', function(e){
+					e.preventDefault();
+					refreshOutput();
+				});
+				function refreshOutput(){
+					JST.setTemplate('tryit', function(){
+						return $('#tryit_template').val();
+					});
+					try{
+						JST.setProvider('tryit', JSON.parse($('#tryit_data_provider').val()));
+						JST.actions.parsePage($('#output_container').get(0));
+					}
+					catch(e){
+						throw e;
+						console.log(e);
+						alert("Please enter a valid JSON as the data provider and check if your template is proper. Check console for more errors");
+					}
+				}
+				refreshOutput();
+			})();
+		</script>
+	</div>
+</body>
+</html>
