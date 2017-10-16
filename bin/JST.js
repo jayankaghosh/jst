@@ -1,49 +1,105 @@
-if(!window.JST){
-	var JST = {
-		baseURL: function(){
+(function(jst){
+	if (!jst) jst = {};
+	if(!jst.baseURL){
+		jst.baseURL = function(){
 			var origin = window.location.origin;
 			var path = window.location.pathname.split("/");
 			if(path[path.length-1].indexOf(".") >= 0) path.splice(path.length-1, 1);
 			path = origin+path.join('/');
 			if(path.charAt(path.length-1) == '/') path = path.slice(0, -1);
 			return path;
-		},
-		variablePattern: /{{var (.*?)}}/,
-		preprocessorPattern: /\<\?(.*?)\?\>/,
-		getVariablePattern: function(){
-			var pattern = JST.variablePattern;
+		}
+	}
+	if(!jst.variablePattern){
+		jst.variablePattern = /{{var (.*?)}}/;
+	}
+	if(!jst.preprocessorPattern){
+		jst.preprocessorPattern = /\<\?(.*?)\?\>/;
+	}
+	if(!jst.getVariablePattern){
+		jst.getVariablePattern = function(){
+			var pattern = jst.variablePattern;
 			var source = pattern.source;
 			return new RegExp(source, "g");
-		},
-		getpreprocessorPattern: function(){
-			return JST.preprocessorPattern; 
-		},
-		setVariablePattern: function(regex){
-			JST.variablePattern = regex;
-		},
-		setpreprocessorPattern: function(regex){
-			JST.preprocessorPattern = regex;
-		},
-		config: {"templates":{},"providers":{}},
-		loaderHTML: "...",
-		cache: {},
-		providers: {},
-		setLoaderHTML: function(html){
-			JST.loaderHTML = html;
-		},
-		setConfig: function(config){
-			JST.config = config;
-		},
-		setTemplate: function(name, url){
-			JST.config.templates[name] = url;
 		}
-	};
-}
-(function(variablePattern, preprocessorPattern){
+	}
+	if(!jst.getpreprocessorPattern){
+		jst.getpreprocessorPattern = function(){
+			return jst.preprocessorPattern; 
+		}
+	}
+	if(!jst.setVariablePattern){
+		jst.setVariablePattern = function(regex){
+			jst.variablePattern = regex;
+		}
+	}
+	if(!jst.setpreprocessorPattern){
+		jst.setpreprocessorPattern = function(regex){
+			jst.preprocessorPattern = regex;
+		}
+	}
+	if(!jst.config){
+		jst.config = {"templates":{},"providers":{}};
+	}
+	if(!jst.loaderHTML){
+		jst.loaderHTML = "...";
+	}
+	if(!jst.cache){
+		jst.cache = {};
+	}
+	if(!jst.providers){
+		jst.providers = {};
+	}
+	if(!jst.setLoaderHTML){
+		jst.setLoaderHTML = function(html){
+			jst.loaderHTML = html;
+		}
+	}
+	if(!jst.setConfig){
+		jst.setConfig = function(config){
+			jst.config = config;
+		}
+	}
+	if(!jst.setTemplate){
+		jst.setTemplate = function(name, url){
+			jst.config.templates[name] = url;
+		}
+	}
+	if(!jst._log){
+		jst._log = [];
+		jst.log = function(message){
+			if(jst.debug){
+				jst._log.push(message);
+			}
+		}
+		jst.getLog = function(){
+			return jst._log;
+		}
+		jst.debugger = function(){
+			jst.debug = true;
+			var timeStart = new Date().getTime();
+			try{
+				jst.actions.parsePage();
+			}
+			catch(e){
+				jst.log(e);
+			}
+			var timeStop = new Date().getTime();
+			jst.debug = false;
+			console.log('Execution completed in '+(timeStop-timeStart)+' milliseconds')
+			return jst.getLog();
+		}
+	}
+	window.JST = jst;
+})(window.JST);
+
+
+(function(variablePattern, preprocessorPattern, jst){
 	var preprocessorPlaceholderString = Math.floor(Math.random() * (5000 - 1 + 1)) + 1;
 	var Plugins = {
-		subject: window.JST,
+		subject: jst,
 		render: function(f, args, context){
+			jst.log("Plugin render "+f.name+" start");
 			if(!context) context = window;
 			if(typeof Plugins.subject.plugins != "object") Plugins.subject.plugins = {};
 			//before
@@ -55,9 +111,11 @@ if(!window.JST){
 			if(typeof Plugins.subject.plugins["after"+f.name] == "function"){
 				r = Plugins.execute(Plugins.subject.plugins["after"+f.name], [r], f);
 			}
+			jst.log("Plugin render "+f.name+" end");
 			return r;
 		},
 		execute(f, args, context){
+			jst.log("Executing function "+f.name);
 			return f.apply(context, args);
 		}
 	}
@@ -73,9 +131,9 @@ if(!window.JST){
 				config = config.innerHTML;
 			}
 			config = JSON.parse(config);
-		}catch(e){console.log("JST: config not found");}
-		JST.config = Plugins.render(mergeConfigs, [JST.config, config]);
-		return JST.config;
+		}catch(e){jst.log("config not found");}
+		jst.config = Plugins.render(mergeConfigs, [jst.config, config]);
+		return jst.config;
 	}
 	function mergeConfigs(obj1, obj2){
 		if(!obj1['templates']) obj1['templates'] = {};
@@ -92,16 +150,18 @@ if(!window.JST){
 		return obj1;
 	}
 	function _fetchFile(url, callback, extraData, async){
-		url = url.replace(/\$BASEURL/g, JST.baseURL);
+		url = url.replace(/\$BASEURL/g, jst.baseURL);
 		if(typeof async == "undefined") async = true;
-		if(JST.cache[url]){
-			switch (typeof JST.cache[url]) {
+		if(jst.cache[url]){
+			switch (typeof jst.cache[url]) {
 				case "object":
-					return JST.cache[url].addEventListener('readystatechange', function(){
+					return jst.cache[url].addEventListener('readystatechange', function(){
+						jst.log("cache listener added for "+url);
 						initCallback(this, url, extraData);
 					});
 				case "string":
-					return callback(JST.cache[url]);
+					jst.log(url+" loaded from cache");
+					return callback(jst.cache[url], url, extraData);
 			}
 		}
 		var xmlhttp;
@@ -112,11 +172,11 @@ if(!window.JST){
 	    xmlhttp.open("GET", url, async);
 	    xmlhttp.send();
 
-	    JST.cache[url] = xmlhttp;
+	    jst.cache[url] = xmlhttp;
 
 	    function initCallback(xmlhttp, url){
 	        if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-	        	JST.cache[url] = xmlhttp.responseText;
+	        	jst.cache[url] = xmlhttp.responseText;
 	            callback(xmlhttp.responseText, url, extraData);
 	        }
 	    }
@@ -153,7 +213,7 @@ if(!window.JST){
 	var renderTemplate = function(template, data){
 		if(!data) data = {};
 		template = templatePreProcessor(template, data);
-		return template.replace(/\$BASEURL/g, JST.baseURL).replace(new RegExp(preprocessorPlaceholderString, "g"), '\n');
+		return template.replace(/\$BASEURL/g, jst.baseURL).replace(new RegExp(preprocessorPlaceholderString, "g"), '\n');
 	}
 	var parseTemplate = function(parent, template, data, debugInfo){
 		if(parent.getAttribute('data-loop')){
@@ -166,7 +226,7 @@ if(!window.JST){
 				template = response;
 			}
 			catch(e){
-				console.log(e);
+				jst.log(e);
 			}
 		}
 		else{
@@ -182,7 +242,8 @@ if(!window.JST){
 		}
 
 		if(hasAttribute(parent, 'data-template')){
-			JST.actions.parsePage(parent);
+			jst.log({context: parent, message: "context has inner template calls, calling parsePage on context"}	);
+			jst.actions.parsePage(parent);
 		}
 
 		function hasAttribute(parent, attribute){
@@ -203,8 +264,9 @@ if(!window.JST){
 	var parsePage = function(templates, providers, page){
 		for(var template in templates){
 			var elements = page.querySelectorAll('[data-template="'+template+'"]');
+			jst.log({context: page, message: elements.length+" template calls found in context"});
 			elements.forEach(function(element){
-				element.innerHTML = JST.loaderHTML;
+				element.innerHTML = jst.loaderHTML;
 				var dataProvider = {
 					name: element.getAttribute('data-provider'),
 					value: providers[element.getAttribute('data-provider')]
@@ -217,12 +279,12 @@ if(!window.JST){
 				}
 
 				function afterTemplateFetch(templateData, url, dataProvider){
-					if(typeof JST.providers[dataProvider.name] != "object"){
-						JST.providers[dataProvider.name] = [];
+					if(typeof jst.providers[dataProvider.name] != "object"){
+						jst.providers[dataProvider.name] = [];
 					}
 					switch(typeof dataProvider.value){
 						case "undefined":
-							JST.providers[dataProvider.name].push({
+							jst.providers[dataProvider.name].push({
 								"element": element,
 								"template": templateData,
 								"debugInfo": debugInfo
@@ -233,7 +295,7 @@ if(!window.JST){
 							_fetchFile(dataProvider.value, function(dataProviderData){
 								dataProviderData = JSON.parse(dataProviderData);
 								var debugInfo = [url, dataProviderData];
-								JST.providers[element.getAttribute('data-provider')].push({
+								jst.providers[element.getAttribute('data-provider')].push({
 									"element": element,
 									"template": templateData,
 									"debugInfo": debugInfo
@@ -243,7 +305,7 @@ if(!window.JST){
 							break;
 						case "object":
 							var debugInfo = [url, dataProvider.value];
-							JST.providers[dataProvider.name].push({
+							jst.providers[dataProvider.name].push({
 								"element": element,
 								"template": templateData,
 								"debugInfo": debugInfo
@@ -256,9 +318,9 @@ if(!window.JST){
 		}
 	}
 
-	JST.setProvider = function(name, data){
-		var provider = JST.providers[name];
-		JST.config.providers[name] = data;
+	jst.setProvider = function(name, data){
+		var provider = jst.providers[name];
+		jst.config.providers[name] = data;
 		if(provider){
 			provider.forEach(function(hook){
 				Plugins.render(parseTemplate, [hook.element, hook.template, data, hook.debugInfo]);
@@ -266,11 +328,11 @@ if(!window.JST){
 		}
 	}
 
-	JST.getProvider = function(name){
-		return JST.providers[name];
+	jst.getProvider = function(name){
+		return jst.providers[name];
 	}
 
-	JST.actions = {
+	jst.actions = {
 		"parsePage": function(page){
 			if(!page) page = document;
 			var config = Plugins.render(fetchConfig, [page]);
@@ -286,8 +348,9 @@ if(!window.JST){
 			return Plugins.render(renderTemplate, [template, data]);
 		}
 	}
-	JST.actions.parsePage();
+	jst.actions.parsePage();
 })(
-	JST.getVariablePattern(),
-	JST.getpreprocessorPattern()
+	window.JST.getVariablePattern(),
+	window.JST.getpreprocessorPattern(),
+	window.JST
 );
