@@ -261,6 +261,22 @@
 		}
 
 	}
+	var addProviderHook = function(name, value){
+		var isPresent = false;
+		jst.providers[name].every(function(provider, key){
+			if(provider.element == value.element){
+				isPresent = key;
+				return false;
+			}
+			return true;
+		});
+		if(isPresent >= 0){
+			jst.providers[name][isPresent] = value;
+		}
+		else{
+			jst.providers[name].push(value);
+		}
+	}
 	var parsePage = function(templates, providers, page){
 		for(var template in templates){
 			var elements = page.querySelectorAll('[data-template="'+template+'"]');
@@ -284,36 +300,37 @@
 					}
 					switch(typeof dataProvider.value){
 						case "undefined":
-							jst.providers[dataProvider.name].push({
+							Plugins.render(addProviderHook, [dataProvider.name, {
 								"element": element,
 								"template": templateData,
 								"debugInfo": debugInfo
-							});
+							}]);
 							Plugins.render(parseTemplate, [element, templateData, null, [url, null]]);
 							break;
 						case "string":
 							_fetchFile(dataProvider.value, function(dataProviderData){
 								dataProviderData = JSON.parse(dataProviderData);
 								var debugInfo = [url, dataProviderData];
-								jst.providers[element.getAttribute('data-provider')].push({
+								Plugins.render(addProviderHook, [element.getAttribute('data-provider'), {
 									"element": element,
 									"template": templateData,
 									"debugInfo": debugInfo
-								});
+								}]);
 								Plugins.render(parseTemplate, [element, templateData, dataProviderData, debugInfo]);
 							});
 							break;
 						case "object":
 							var debugInfo = [url, dataProvider.value];
-							jst.providers[dataProvider.name].push({
+							Plugins.render(addProviderHook, [dataProvider.name, {
 								"element": element,
 								"template": templateData,
 								"debugInfo": debugInfo
-							});
+							}]);
 							Plugins.render(parseTemplate, [element, templateData, dataProvider.value, debugInfo]);
 							break;
 					}
 				}
+
 			});
 		}
 	}
