@@ -339,9 +339,10 @@
 		var provider = jst.providers[name];
 		jst.config.providers[name] = data;
 		if(provider){
-			provider.forEach(function(hook){
+			for(var i in provider) {
+				var hook = provider[i];
 				Plugins.render(parseTemplate, [hook.element, hook.template, data, hook.debugInfo]);
-			});
+			};
 		}
 	}
 
